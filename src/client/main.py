@@ -8,6 +8,7 @@ import socket
 import time
 import signal
 import platform
+import shutil
 import configparser  
 from prettytable import PrettyTable
 from time import sleep
@@ -24,9 +25,31 @@ apiUrl='http://127.0.0.1:19090'
 taskDataPath=conf.get('base','taskdir')
 
 
+
+
 @click.group()
 def tm():
     pass
+
+@click.command()
+def startup():
+    if sysstr =="Linux":
+        sourceFile = os.path.join(here,  "../config/task-manage-svr.sh") 
+        targetFile ="/etc/init.d/task-manage-svr.sh"
+        shutil.copyfile(sourceFile,targetFile)
+        if os.path.exists(targetFile):
+            os.system("sudo chmod +x /etc/init.d/task-manage-svr.sh")
+            os.system("sudo update-rc.d task-manage-svr.sh defaults 90")
+            click.echo('设置开机启动成功')
+        else:
+            click.echo('服务创建失败')
+    else:
+        click.echo('不支持此系统')
+
+@click.command()
+def startdown():
+    os.system("sudo update-rc.d -f task-manage-svr.sh remove")
+    click.echo('服务移除成功')
 
 @click.command()
 def runserver():
@@ -45,10 +68,7 @@ def stopserver():
     os.kill(int(pid),signal.SIGTERM)
     click.echo('服务终止')
 
-@click.command()
-def startup():
-    if sysstr =="Linux":
-        pass
+
 
 @click.command()
 def ls():
@@ -101,7 +121,7 @@ def add(name,cron,path,file,command,args):
                 click.echo('添加失败:'+retData['msg'])
 
 @click.option('--name', '-n', help='任务名称',required=True)
-@click.option('--cron',  '-c',nargs=7, help='cron表达式',required=False)
+@click.option('--cron',  '-c', help='cron表达式',required=False)
 @click.option('--path','-p',type=click.Path(exists=True,resolve_path=True), help='执行的文件路径',required=False)
 @click.option('--command',  '-cmd',  help='cmd命令,需打双引号',required=False)
 @click.option('--args',  '-a',  help='执行命令时携带的参数 需打双引号 ',required=False)
@@ -160,6 +180,16 @@ def resume(name):
     else:
         click.echo('恢复失败:'+retData['msg'])
 
+@click.option('--name', '-n', help='任务名称',required=True)
+@click.command()
+def run(name):
+    ret = requests.post(url=apiUrl+'/task/run',data={"name":name})
+    retData=ret.json()
+    if retData['result']==1:
+        click.echo('开始运行,正在获取运行日志')
+    
+    else:
+        click.echo('运行失败:'+retData['msg'])
 
 @click.option('--name', '-n', help='任务名称',required=True)
 @click.command()
@@ -177,17 +207,18 @@ def delete(name):
 def log(name):
     logFileName = time.strftime('%Y-%m-%d', time.localtime(time.time()))+'.log'
     logFilePath = os.path.join(taskDataPath, name, 'log', logFileName)
-    with open(logFilePath,'r') as f:
-        lines =  f.readlines()
-    if len(lines)<20:
-        for line in lines:
+    if os.path.exists(logFilePath):
+        with open(logFilePath,'r') as f:
+            lines =  f.readlines()
+        if len(lines)<20:
+            for line in lines:
+                click.echo(line.strip('\n'))
+        else:
+            _lines=[]
+        for i in range(len(lines)-1,len(lines)-20,-1):
+            _lines.insert(0,lines[i])
+        for line in _lines:
             click.echo(line.strip('\n'))
-    else:
-        _lines=[]
-    for i in range(len(lines)-1,len(lines)-20,-1):
-        _lines.insert(0,lines[i])
-    for line in _lines:
-        click.echo(line.strip('\n'))
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sk:
         sk.connect(('127.0.0.1',19091))
@@ -206,9 +237,12 @@ tm.add_command(edit)
 tm.add_command(delete)
 tm.add_command(paused)
 tm.add_command(resume)
+tm.add_command(run)
 tm.add_command(log)
 tm.add_command(runserver)
 tm.add_command(stopserver)
+tm.add_command(startup)
+tm.add_command(startdown)
 
 
 if __name__ == '__main__':

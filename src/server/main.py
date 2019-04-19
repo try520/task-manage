@@ -20,7 +20,8 @@ else:
 	conf.read(os.path.join(here,'../config','config.cfg'))
 
 taskRootDir=conf.get('base','taskdir')
-webPort =conf.get('web','port') 
+webPort =conf.get('web','port')
+
 
 
 @route('/task/getItems', method='GET')
@@ -110,6 +111,17 @@ def start():
     except Exception as err:
         return json.dumps({"result": 0, "msg": "Error:{0}".format(err)})
 
+@route('/task/run', method='POST')
+def runTask():
+    try:
+        name = request.forms.get('name')
+        if name == None:
+            return json.dumps({"result": 0, "msg": '参数丢失'})
+        else:
+            task.run(name)
+            return json.dumps({"result": 1})
+    except Exception as err:
+        return json.dumps({"result": 0, "msg": "Error:{0}".format(err)})
 
 @route('/task/paused', method='POST')
 def paused():

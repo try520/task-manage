@@ -1,0 +1,10 @@
+{
+    "name": "test",
+    "cron": "*/5 * * * * * *",
+    "path": "",
+    "state": "runing",
+    "nextRunTime": "2019-4-19 22:23:30",
+    "cmd": "ping 127.0.0.1",
+    "args": "",
+    "pid": 26240
+}

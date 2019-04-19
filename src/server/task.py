@@ -306,6 +306,11 @@ class Task(object):
 			print("stop task err:name={0},info={1}".format(item['name'],err))
 			return False
 
+	def run(self,name):
+		item=self.getItem(name)
+		if item is not None:
+			self.runTask(item)
+
 	def start(self,name):
 		item=self.getItem(name)
 		cron = item['cron'].split(' ')
