@@ -34,15 +34,19 @@ def tm():
 @click.command()
 def startup():
     if sysstr =="Linux":
-        sourceFile = os.path.join(here,  "../config/task-manage-svr.sh") 
-        targetFile ="/etc/init.d/task-manage-svr.sh"
-        shutil.copyfile(sourceFile,targetFile)
-        if os.path.exists(targetFile):
-            os.system("sudo chmod +x /etc/init.d/task-manage-svr.sh")
-            os.system("sudo update-rc.d task-manage-svr.sh defaults 90")
-            click.echo('设置开机启动成功')
-        else:
-            click.echo('服务创建失败')
+        os.system("sudo chmod 777 "+conf.get('base','taskdir'))
+        os.system("sudo echo '/usr/bin/python3 /usr/local/lib/python3.5/dist-packages/task_manage-1.0-py3.5.egg/server/main.py' >> /etc/rc.local")
+        click.echo('设置开机启动成功')
+        # sourceFile = os.path.join(here,  "../config/task-manage-svr.sh") 
+        # targetFile ="/etc/init.d/task-manage-svr"
+        # shutil.copyfile(sourceFile,targetFile)
+        # open(targetFile, "wb").write(open(sourceFile, "rb").read())
+        # if os.path.exists(targetFile):
+        #     os.system("sudo chmod +x /etc/init.d/task-manage-svr")
+        #     os.system("sudo update-rc.d task-manage-svr defaults 90")
+        #     click.echo('设置开机启动成功')
+        # else:
+            # click.echo('服务创建失败')
     else:
         click.echo('不支持此系统')
 
@@ -55,6 +59,7 @@ def startdown():
 def runserver():
     
     if sysstr =="Linux":
+        
         os.system("nohup runtaskmanageserver &")
     else:
         os.system("runtaskmanageserver")
@@ -228,6 +233,10 @@ def log(name):
             msg = data.decode()
             click.echo(msg)
 
+@click.command()
+def gethere():
+    click.echo(here)
+
 
 tm.add_command(ls)
 tm.add_command(start)
@@ -243,6 +252,7 @@ tm.add_command(runserver)
 tm.add_command(stopserver)
 tm.add_command(startup)
 tm.add_command(startdown)
+tm.add_command(gethere)
 
 
 if __name__ == '__main__':

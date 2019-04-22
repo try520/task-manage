@@ -1,4 +1,4 @@
 #!/bin/bash
 # command content
-runtaskmanageserver
+runtaskmanageserver &
 exit 0

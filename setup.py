@@ -15,7 +15,7 @@ setup(
     # py_modules=['main'],
     package_data = {
         # 任何包中含有.txt文件，都包含它
-        '': ['*.cfg']
+        '': ['*.cfg','*.sh']
     },
     install_requires=[
         'click','requests','prettytable','APScheduler','bottle','configParser'
