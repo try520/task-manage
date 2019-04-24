@@ -84,11 +84,10 @@ def ls():
         tb = PrettyTable()
         tb.field_names = ["PID","名称", "计划周期", "状态", "下次运行时间","运行命令","路径","携带参数","描述"]
         for item in data['data']:
-            print(item)
+       
             if 'pid' not in item.keys():
                 item['pid']=''
-            if 'nextRunTime' not in item.keys():
-                item['nextRunTime']=''
+           
             
             info=item['info']
             tb.add_row([item['pid'] or '',item['name'],item['cron'], item['state'], item['nextRunTime'],item['cmd'],item['path'],item['args'],info])
@@ -113,7 +112,6 @@ def add(name,cron,path,file,command,args,info):
         with open(file, 'r',encoding='utf-8') as f:
             taskArrays = json.load(f)
         for item in taskArrays:
-            print(item)
             ret = requests.post(url=apiUrl+'/task/add',data=item)
             retData=ret.json()
             if retData['result']==1:
@@ -150,7 +148,7 @@ def add(name,cron,path,file,command,args,info):
 @click.option('--command',  '-cmd',  help='cmd命令,需打双引号',required=False)
 @click.option('--args',  '-a',  help='执行命令时携带的参数 需打双引号 ',required=False)
 @click.command()
-def edit(name,cron,path,command,args):
+def edit(name,cron,path,command,args,info):
     if name==None :
         click.echo('参数丢失 [-n] [-c]  或者 [--name] [--cron]')
     else:
