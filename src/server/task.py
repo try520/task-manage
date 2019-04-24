@@ -270,13 +270,15 @@ class Task(object):
 				self.addJob(item)
 		self.scheduler.start()
 		jobs = self.scheduler.get_jobs()
+		self.getNextRunTime()
+		# print(self.taskItems)
+
+	def getNextRunTime(self):
+		jobs = self.scheduler.get_jobs()
 		for job in jobs:
 			for item in _taskItems:
 				if item['name']==job.id:
-					item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(job.next_run_time.year,job.next_run_time.month,job.next_run_time.day,job.next_run_time.hour,job.next_run_time.minute,job.next_run_time.second)
-		# print(self.taskItems)
-
-			
+					item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(job.next_run_time.year,job.next_run_time.month,job.next_run_time.day,job.next_run_time.hour,job.next_run_time.minute,job.next_run_time.second)		
 
 	def reload(self):
 		self.scheduler.shutdown(wait=True)
@@ -287,6 +289,7 @@ class Task(object):
 		try:
 			cron=item['cron'].split(' ')
 			self.scheduler.add_job(id=item['name'],func=self.runTask,trigger='cron', args=[item],year=cron[6],month=cron[4],day=cron[3],day_of_week=cron[5],hour=cron[2],minute=cron[1],second=cron[0],max_instances=1)
+			self.getNextRunTime()
 		except Exception as err:
 			print("addJob task err:name={0},info={1}".format(item['name'],err))
 		
@@ -359,7 +362,7 @@ class Task(object):
 			cmd=taskItem['cmd']
 
 		child = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
-
+		self.getNextRunTime()
 		for i in range(0,len(self.taskItems)):
 			if self.taskItems[i]['name']==taskItem['name']:
 				self.taskItems[i]['state']='runing'
