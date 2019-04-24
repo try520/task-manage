@@ -82,29 +82,45 @@ def ls():
     if data['result']==1:
         # click.echo(data['data'])
         tb = PrettyTable()
-        tb.field_names = ["PID","名称", "计划周期", "状态", "下次运行时间","运行命令","路径","携带参数"]
+        tb.field_names = ["PID","名称", "计划周期", "状态", "下次运行时间","运行命令","路径","携带参数","描述"]
         for item in data['data']:
-            tb.add_row([item['pid'],item['name'],item['cron'], item['state'], item['nextRunTime'],item['cmd'],item['path'],item['args']])
-        print(tb)
+            print(item)
+            if 'pid' not in item.keys():
+                item['pid']=''
+            if 'nextRunTime' not in item.keys():
+                item['nextRunTime']=''
+            
+            info=item['info']
+            tb.add_row([item['pid'] or '',item['name'],item['cron'], item['state'], item['nextRunTime'],item['cmd'],item['path'],item['args'],info])
     else:
         click.echo(data['msg'])
-    
+    print(tb)
 
 
 
-@click.option('--file',  '-f', help='json配置文件',required=False)
+@click.option('--file',  '-f',type=click.Path(exists=True,resolve_path=True), help='json配置文件',required=False)
 @click.option('--name', '-n', help='任务名称',required=False)
 @click.option('--cron',  '-c',  help='cron表达式,需打双引号', required=False)
 @click.option('--command',  '-cmd',  help='cmd命令,需打双引号',required=False)
 @click.option('--args',  '-a',  help='执行命令时携带的参数 需打双引号 ',required=False)
+@click.option('--info',  '-i',  help='任务描述信息',required=False)
 @click.option('--path','-p',type=click.Path(exists=True,resolve_path=True), help='执行的文件路径',required=False)
 @click.command()
-def add(name,cron,path,file,command,args):
+def add(name,cron,path,file,command,args,info):
 
-    if file:
-        pass
+    if file is not None:
+        # with open(pidFilePath, 'r', encoding='utf-8') as f:
+        with open(file, 'r',encoding='utf-8') as f:
+            taskArrays = json.load(f)
+        for item in taskArrays:
+            print(item)
+            ret = requests.post(url=apiUrl+'/task/add',data=item)
+            retData=ret.json()
+            if retData['result']==1:
+                click.echo('添加{0}成功'.format(item['name']))
+            else:
+                click.echo('添加{0}失败:{1}'.format(item['name'],retData['msg']))
     else:
-        pass
         if name == None or cron==None:
             click.echo('参数丢失 [-n] [-c]  或者 [--name] [--cron]')
         elif path==None and command==None:
@@ -112,11 +128,13 @@ def add(name,cron,path,file,command,args):
         else:
            
 
-            if path==None:
+            if path is None:
                 path=""
-            if args==None:
+            if args is None:
                 args=""
-            task={'name':name,'cron':cron,'path':path,'cmd':command,'args':args}
+            if info is None:
+                info=""
+            task={'name':name,'cron':cron,'path':path,'cmd':command,'args':args,'info':info}
             ret = requests.post(url=apiUrl+'/task/add',data=task)
             retData=ret.json()
 
@@ -127,6 +145,7 @@ def add(name,cron,path,file,command,args):
 
 @click.option('--name', '-n', help='任务名称',required=True)
 @click.option('--cron',  '-c', help='cron表达式',required=False)
+@click.option('--info',  '-i',  help='任务描述信息',required=False)
 @click.option('--path','-p',type=click.Path(exists=True,resolve_path=True), help='执行的文件路径',required=False)
 @click.option('--command',  '-cmd',  help='cmd命令,需打双引号',required=False)
 @click.option('--args',  '-a',  help='执行命令时携带的参数 需打双引号 ',required=False)
@@ -135,7 +154,7 @@ def edit(name,cron,path,command,args):
     if name==None :
         click.echo('参数丢失 [-n] [-c]  或者 [--name] [--cron]')
     else:
-        task={'name':name,'cron':cron,'path':path,'cmd':command,'args':args}
+        task={'name':name,'cron':cron,'path':path,'cmd':command,'args':args,'info':info}
         ret = requests.post(url=apiUrl+'/task/edit',data=task)
         retData=ret.json()
         if retData['result']==1:

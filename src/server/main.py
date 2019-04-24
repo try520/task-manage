@@ -50,7 +50,8 @@ def add():
         path = request.forms.get('path')
         cmd = request.forms.get('cmd')
         args = request.forms.get('args')
-        ret = task.add(name, cron, path, cmd, args)
+        info =request.forms.get('info')
+        ret = task.add(name, cron, path, cmd, args,info)
         return json.dumps(ret)
     except Exception as err:
         return json.dumps({"result": 0, "msg": "Error:{0}".format(err)})
@@ -64,7 +65,8 @@ def edit():
         path = request.forms.get('path')
         cmd = request.forms.get('cmd')
         args = request.forms.get('args')
-        ret = task.edit(name, cron, path, cmd, args)
+        info =request.forms.get('info')
+        ret = task.edit(name, cron, path, cmd, args,info)
         return json.dumps(ret)
     except Exception as err:
         return json.dumps({"result": 0, "msg": "Error:{0}".format(err)})

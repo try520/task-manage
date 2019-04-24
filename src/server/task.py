@@ -165,7 +165,7 @@ class Task(object):
 					json.dump(item, f, indent=4)
 		# print('job-execute',item)
 
-	def add(self,name,cron,path,commend,args):
+	def add(self,name,cron,path,commend,args,info):
 		taskDir = os.path.join(self.taskRootDir,name)
 		if name==None or cron==None or path==None :
 			return {"result":0,"msg":"参数丢失"}
@@ -174,8 +174,7 @@ class Task(object):
 			for item in self.taskItems:
 				if item['name']==name:
 					return {"result":0,"msg":"任务已经存在"}
-			item={'name':name,'cron':cron,'path':path,'state':'await run','nextRunTime':'','cmd':commend,'args':args}
-            
+			item={'name':name,'cron':cron,'path':path,'state':'await run','nextRunTime':'','cmd':commend,'args':args,'info':info}
 			self.taskItems.append(item)
 
 			if os.path.exists(taskDir)==False:
@@ -188,7 +187,7 @@ class Task(object):
 			self.addJob(item)
 			return {"result":1}
 
-	def edit(self,name,cron,path,commend,args):
+	def edit(self,name,cron,path,commend,args,info):
 		taskDir = self.taskRootDir + '/'+name
 		if name==None or cron==None  :
 			return {"result":0,"msg":"参数丢失"}
@@ -207,6 +206,8 @@ class Task(object):
 						self.taskItems[i]['cmd']=commend
 					if(args is not None and args!=''):
 						self.taskItems[i]['args']=args
+					if(info is not None and info!=''):
+						self.taskItems[i]['info']=info
 					item=self.taskItems[i]
 					isHas=True
 			
@@ -247,7 +248,7 @@ class Task(object):
 			for i in range(0, len(dirList)):
 				path = os.path.join(self.taskRootDir, dirList[i])
 				if os.path.isfile(path)==False:#如果是目录
-					with open(path+'/info.json', 'r') as f:
+					with open(path+'/info.json', 'r',encoding='utf-8') as f:
 						_taskItem = json.load(f)
 						self.taskItems.append(_taskItem)
 		
