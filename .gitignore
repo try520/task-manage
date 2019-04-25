@@ -25,6 +25,8 @@ wheels/
 *.egg
 package/
 test/
+.vscode/
+__pycache__/
 MANIFEST
 
 # PyInstaller

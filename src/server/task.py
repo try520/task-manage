@@ -136,10 +136,11 @@ class Task(object):
 
 	def jobExecuteListener(self,ev):
 		name=ev.job_id
+		self.getNextRunTime()
 		item=self.getItem(name)
 		if item['state']!='stop':
 			item['state']='await next run'
-			item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(ev.scheduled_run_time.year,ev.scheduled_run_time.month,ev.scheduled_run_time.day,ev.scheduled_run_time.hour,ev.scheduled_run_time.minute,ev.scheduled_run_time.second)
+			# item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(ev.scheduled_run_time.year,ev.scheduled_run_time.month,ev.scheduled_run_time.day,ev.scheduled_run_time.hour,ev.scheduled_run_time.minute,ev.scheduled_run_time.second)
 			taskDir = os.path.join(self.taskRootDir,name)
 			with open(taskDir+'/info.json', 'w', encoding='utf-8') as f:
 					json.dump(item, f, indent=4,ensure_ascii=False)
@@ -147,9 +148,10 @@ class Task(object):
 
 	def jobPausedListener(self,ev):
 		name=ev.job_id
+		self.getNextRunTime()
 		item=self.getItem(name)
 		item['state']='paused'
-		item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(ev.scheduled_run_time.year,ev.scheduled_run_time.month,ev.scheduled_run_time.day,ev.scheduled_run_time.hour,ev.scheduled_run_time.minute,ev.scheduled_run_time.second)
+		# item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(ev.scheduled_run_time.year,ev.scheduled_run_time.month,ev.scheduled_run_time.day,ev.scheduled_run_time.hour,ev.scheduled_run_time.minute,ev.scheduled_run_time.second)
 		taskDir = os.path.join(self.taskRootDir,name)
 		with open(taskDir+'/info.json', 'w', encoding='utf-8') as f:
 					json.dump(item, f, indent=4,ensure_ascii=False)
@@ -157,9 +159,10 @@ class Task(object):
 
 	def jobResumedListener(self,ev):
 		name=ev.job_id
+		self.getNextRunTime()
 		item=self.getItem(name)
 		item['state']='await next run'
-		item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(ev.scheduled_run_time.year,ev.scheduled_run_time.month,ev.scheduled_run_time.day,ev.scheduled_run_time.hour,ev.scheduled_run_time.minute,ev.scheduled_run_time.second)
+		# item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(ev.scheduled_run_time.year,ev.scheduled_run_time.month,ev.scheduled_run_time.day,ev.scheduled_run_time.hour,ev.scheduled_run_time.minute,ev.scheduled_run_time.second)
 		taskDir = os.path.join(self.taskRootDir,name)
 		with open(taskDir+'/info.json', 'w', encoding='utf-8') as f:
 					json.dump(item, f, indent=4,ensure_ascii=False)
@@ -276,6 +279,7 @@ class Task(object):
 		# print(self.taskItems)
 
 	def getNextRunTime(self):
+		_taskItems=self.getItems()
 		jobs = self.scheduler.get_jobs()
 		for job in jobs:
 			for item in _taskItems:
