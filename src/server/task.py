@@ -43,7 +43,7 @@ class Task(object):
 	def __init__(self):
 		self.isStop=False
 		self.taskItems=[]
-		self.jobs=[]
+		self.jobs={}
 		self.socketClients=[]
 		
 		self.taskRootDir =conf.get('base','taskdir')
@@ -131,45 +131,41 @@ class Task(object):
 			item['state']='error'
 			taskDir = os.path.join(self.taskRootDir,name)
 			with open(taskDir+'/info.json', 'w', encoding='utf-8') as f:
-					json.dump(item, f, indent=4,ensure_ascii=False)
+					json.dump(item, f, indent=4)
 
 
 	def jobExecuteListener(self,ev):
 		name=ev.job_id
-		self.getNextRunTime()
 		item=self.getItem(name)
 		if item['state']!='stop':
 			item['state']='await next run'
-			# item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(ev.scheduled_run_time.year,ev.scheduled_run_time.month,ev.scheduled_run_time.day,ev.scheduled_run_time.hour,ev.scheduled_run_time.minute,ev.scheduled_run_time.second)
+			item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(ev.scheduled_run_time.year,ev.scheduled_run_time.month,ev.scheduled_run_time.day,ev.scheduled_run_time.hour,ev.scheduled_run_time.minute,ev.scheduled_run_time.second)
 			taskDir = os.path.join(self.taskRootDir,name)
 			with open(taskDir+'/info.json', 'w', encoding='utf-8') as f:
-					json.dump(item, f, indent=4,ensure_ascii=False)
+					json.dump(item, f, indent=4)
 		# print('job-execute',item)
 
 	def jobPausedListener(self,ev):
 		name=ev.job_id
-		self.getNextRunTime()
 		item=self.getItem(name)
 		item['state']='paused'
-		# item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(ev.scheduled_run_time.year,ev.scheduled_run_time.month,ev.scheduled_run_time.day,ev.scheduled_run_time.hour,ev.scheduled_run_time.minute,ev.scheduled_run_time.second)
+		item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(ev.scheduled_run_time.year,ev.scheduled_run_time.month,ev.scheduled_run_time.day,ev.scheduled_run_time.hour,ev.scheduled_run_time.minute,ev.scheduled_run_time.second)
 		taskDir = os.path.join(self.taskRootDir,name)
 		with open(taskDir+'/info.json', 'w', encoding='utf-8') as f:
-					json.dump(item, f, indent=4,ensure_ascii=False)
+					json.dump(item, f, indent=4)
 		# print('job-execute',item)
 
 	def jobResumedListener(self,ev):
 		name=ev.job_id
-		self.getNextRunTime()
 		item=self.getItem(name)
 		item['state']='await next run'
-		# item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(ev.scheduled_run_time.year,ev.scheduled_run_time.month,ev.scheduled_run_time.day,ev.scheduled_run_time.hour,ev.scheduled_run_time.minute,ev.scheduled_run_time.second)
+		item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(ev.scheduled_run_time.year,ev.scheduled_run_time.month,ev.scheduled_run_time.day,ev.scheduled_run_time.hour,ev.scheduled_run_time.minute,ev.scheduled_run_time.second)
 		taskDir = os.path.join(self.taskRootDir,name)
 		with open(taskDir+'/info.json', 'w', encoding='utf-8') as f:
-					json.dump(item, f, indent=4,ensure_ascii=False)
+					json.dump(item, f, indent=4)
 		# print('job-execute',item)
 
-	def add(self,name,cron,path,commend,args,info):
-
+	def add(self,name,cron,path,commend,args):
 		taskDir = os.path.join(self.taskRootDir,name)
 		if name==None or cron==None or path==None :
 			return {"result":0,"msg":"参数丢失"}
@@ -178,20 +174,21 @@ class Task(object):
 			for item in self.taskItems:
 				if item['name']==name:
 					return {"result":0,"msg":"任务已经存在"}
-			item={'name':name,'cron':cron,'path':path,'state':'await run','nextRunTime':'','cmd':commend,'args':args,'info':info}
+			item={'name':name,'cron':cron,'path':path,'state':'await run','nextRunTime':'','cmd':commend,'args':args}
+            
 			self.taskItems.append(item)
-			
+
 			if os.path.exists(taskDir)==False:
 				os.makedirs(taskDir)
 			if os.path.exists(taskDir+'/log') == False:
 				os.makedirs(taskDir+'/log')
 
 			with open(taskDir+'/info.json', 'w', encoding='utf-8') as f:
-				json.dump(item,f,indent=4,ensure_ascii=False)
+				json.dump(item,f,indent=4)
 			self.addJob(item)
 			return {"result":1}
 
-	def edit(self,name,cron,path,commend,args,info):
+	def edit(self,name,cron,path,commend,args):
 		taskDir = self.taskRootDir + '/'+name
 		if name==None or cron==None  :
 			return {"result":0,"msg":"参数丢失"}
@@ -210,14 +207,12 @@ class Task(object):
 						self.taskItems[i]['cmd']=commend
 					if(args is not None and args!=''):
 						self.taskItems[i]['args']=args
-					if(info is not None and info!=''):
-						self.taskItems[i]['info']=info
 					item=self.taskItems[i]
 					isHas=True
 			
 			if isHas:
 				with open(taskDir+'/info.json', 'w', encoding='utf-8') as f:
-					json.dump(item, f, indent=4,ensure_ascii=False)
+					json.dump(item, f, indent=4)
 				
 				self.scheduler.remove_job(name)
 				self.addJob(item)
@@ -252,7 +247,7 @@ class Task(object):
 			for i in range(0, len(dirList)):
 				path = os.path.join(self.taskRootDir, dirList[i])
 				if os.path.isfile(path)==False:#如果是目录
-					with open(path+'/info.json', 'r',encoding='utf-8') as f:
+					with open(path+'/info.json', 'r') as f:
 						_taskItem = json.load(f)
 						self.taskItems.append(_taskItem)
 		
@@ -272,19 +267,17 @@ class Task(object):
 		_taskItems=self.getItems()
 		for item in _taskItems:
 			if item['state']!='stop':
+				item['state']="await run"
 				self.addJob(item)
 		self.scheduler.start()
-		jobs = self.scheduler.get_jobs()
-		self.getNextRunTime()
-		# print(self.taskItems)
-
-	def getNextRunTime(self):
-		_taskItems=self.getItems()
 		jobs = self.scheduler.get_jobs()
 		for job in jobs:
 			for item in _taskItems:
 				if item['name']==job.id:
-					item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(job.next_run_time.year,job.next_run_time.month,job.next_run_time.day,job.next_run_time.hour,job.next_run_time.minute,job.next_run_time.second)		
+					item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(job.next_run_time.year,job.next_run_time.month,job.next_run_time.day,job.next_run_time.hour,job.next_run_time.minute,job.next_run_time.second)
+		# print(self.taskItems)
+
+			
 
 	def reload(self):
 		self.scheduler.shutdown(wait=True)
@@ -295,7 +288,6 @@ class Task(object):
 		try:
 			cron=item['cron'].split(' ')
 			self.scheduler.add_job(id=item['name'],func=self.runTask,trigger='cron', args=[item],year=cron[6],month=cron[4],day=cron[3],day_of_week=cron[5],hour=cron[2],minute=cron[1],second=cron[0],max_instances=1)
-			self.getNextRunTime()
 		except Exception as err:
 			print("addJob task err:name={0},info={1}".format(item['name'],err))
 		
@@ -304,11 +296,15 @@ class Task(object):
 		try:
 			taskDir=os.path.join(self.taskRootDir,name)
 			item=self.getItem(name)
-			# if item['state']=='runing':
-			os.kill(item['pid'], signal.SIGTERM)
+			if item['state']=='runing':
+				pid = item['pid']
+				os.kill(pid+1, signal.SIGTERM)
+				time.sleep(2)
+				# os.kill(pid, signal.SIGTERM)
+				# time.sleep(1)
 			item['state']='stop'
 			with open(taskDir+'/info.json', 'w', encoding='utf-8') as f:
-					json.dump(item, f, indent=4,ensure_ascii=False)
+					json.dump(item, f, indent=4)
 			self.scheduler.remove_job(name)
 			return True
 		except Exception as err:
@@ -326,9 +322,14 @@ class Task(object):
 		if item['state']=='stop':
 			item['state']='await run'
 			self.scheduler.add_job(id=item['name'],func=self.runTask,trigger='cron', args=[item],year=cron[6],month=cron[4],day=cron[3],day_of_week=cron[5],hour=cron[2],minute=cron[1],second=cron[0],max_instances=1)
+			jobs = self.scheduler.get_jobs()
+			for job in jobs:
+				if item['name']==job.id:
+					item['nextRunTime']="{0}-{1}-{2} {3}:{4}:{5}".format(job.next_run_time.year,job.next_run_time.month,job.next_run_time.day,job.next_run_time.hour,job.next_run_time.minute,job.next_run_time.second)
+					
 			taskDir = os.path.join(self.taskRootDir,name)
 			with open(taskDir+'/info.json', 'w', encoding='utf-8') as f:
-					json.dump(item, f, indent=4,ensure_ascii=False)
+					json.dump(item, f, indent=4)
 			return {"result":1}
 		else:
 			return {"result":0,"msg":'任务状态必须是stop才能再次运行'}
@@ -338,7 +339,7 @@ class Task(object):
 		item['state']='paused'
 		taskDir = os.path.join(self.taskRootDir,name)
 		with open(taskDir+'/info.json', 'w', encoding='utf-8') as f:
-			json.dump(item, f, indent=4,ensure_ascii=False)
+			json.dump(item, f, indent=4)
 		self.scheduler.pause_job(name)
 	
 	def resume(self,name):
@@ -346,11 +347,13 @@ class Task(object):
 		item['state']='await run'
 		taskDir = os.path.join(self.taskRootDir,name)
 		with open(taskDir+'/info.json', 'w', encoding='utf-8') as f:
-			json.dump(item, f, indent=4,ensure_ascii=False)
+			json.dump(item, f, indent=4)
 		self.scheduler.resume_job(name)
 
 
 	def runTask(self,taskItem):
+		if taskItem["state"]=="runing" or taskItem["state"]=="stop":
+			return
 		self.removeLog(taskItem)
 		taskDir =os.path.join(self.taskRootDir,taskItem['name']) 
 		logDir=os.path.join(taskDir,'log')
@@ -367,17 +370,17 @@ class Task(object):
 		if taskItem['cmd']!=None and taskItem['cmd']!='':
 			cmd=taskItem['cmd']
 
-		child = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
-		self.getNextRunTime()
+		child = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,shell=True)
+
 		for i in range(0,len(self.taskItems)):
 			if self.taskItems[i]['name']==taskItem['name']:
 				self.taskItems[i]['state']='runing'
 				self.taskItems[i]['pid']=child.pid
 				with open(taskDir+'/info.json', 'w', encoding='utf-8') as f:
-					json.dump(self.taskItems[i], f, indent=4,ensure_ascii=False)
+					json.dump(self.taskItems[i], f, indent=4)
 		
 		# print(child.pid)
-		# self.jobs.append(child)
+		# self.jobs["child.pid"]=child
 		logger = logging.getLogger(taskItem['name'])
 		
 		while True:
@@ -394,10 +397,10 @@ class Task(object):
 				#获取运行日志
 				filename = time.strftime('%Y-%m-%d', time.localtime(time.time()))+'.log'
 				filename=os.path.join(logDir,filename)
-				handler = logging.FileHandler(filename,mode='a',encoding='utf-8')
+				handler = logging.FileHandler(filename,mode='a',encoding='gbk')
 				logger.addHandler(handler)
 				logger.setLevel(logging.INFO)
-				outStr = outbye.decode('utf-8')
+				outStr = outbye.decode('gbk')
 				# print(outStr)
 				data = outStr.replace('\r\n','')
 				message = time.strftime(

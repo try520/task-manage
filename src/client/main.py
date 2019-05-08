@@ -60,7 +60,7 @@ def runserver():
     
     if sysstr =="Linux":
         
-        os.system("nohup runtaskmanageserver &")
+         os.system("nohup runtaskmanageserver >> {0}/output.log 2>&1 &".format(taskDataPath))
     else:
         os.system("runtaskmanageserver")
     click.echo('服务启动')
