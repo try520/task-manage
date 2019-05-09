@@ -298,18 +298,56 @@ class Task(object):
 			item=self.getItem(name)
 			if item['state']=='runing':
 				pid = item['pid']
-				os.kill(pid+1, signal.SIGTERM)
-				time.sleep(2)
+				if platform.system() =="Windows":
+					os.kill(pid+1, signal.SIGTERM)
+				else:
+					os.kill(pid+1,signal.SIGKILL)
+				time.sleep(4)
 				# os.kill(pid, signal.SIGTERM)
 				# time.sleep(1)
 			item['state']='stop'
 			with open(taskDir+'/info.json', 'w', encoding='utf-8') as f:
 					json.dump(item, f, indent=4)
 			self.scheduler.remove_job(name)
+			time.sleep(1)
 			return True
 		except Exception as err:
 			print("stop task err:name={0},info={1}".format(item['name'],err))
 			return False
+
+	def kill(self,name):
+		try:
+			taskDir=os.path.join(self.taskRootDir,name)
+			item=self.getItem(name)
+			if item['state']=='runing':
+				pid = item['pid']
+				if platform.system() =="Windows":
+					os.kill(pid+1, signal.SIGTERM)
+				else:
+					os.kill(pid+1,signal.SIGKILL)
+				time.sleep(4)
+				# os.kill(pid, signal.SIGTERM)
+				# time.sleep(1)
+			item['state']='await run'
+			with open(taskDir+'/info.json', 'w', encoding='utf-8') as f:
+					json.dump(item, f, indent=4)
+			self.scheduler.remove_job(name)
+			return True
+		except Exception as err:
+			print("kill task err:name={0},info={1}".format(item['name'],err))
+			return False
+
+	def killAllTask(self):
+		try:
+			_taskItems=self.getItems()
+			for item in _taskItems:
+				if item["state"]!="stop":
+					self.kill(item['name'])
+			return ""
+		except Exception as err:
+			print("killAllTask err:{0}".format(err))
+			return "err:{0}".format(err)
+
 
 	def run(self,name):
 		item=self.getItem(name)
@@ -387,7 +425,9 @@ class Task(object):
 			outbye = child.stdout.readline()
 			if self.isStop:#监测停止信号
 				print('任务关闭：'+ taskItem['name'])
-				self.stop(taskItem['name'])
+				# self.stop(taskItem['name'])
+				child.kill()
+				time.sleep(2)
 				break
 			elif outbye == b'':#内部报错退出
 				if child.poll() is not None:
@@ -397,10 +437,10 @@ class Task(object):
 				#获取运行日志
 				filename = time.strftime('%Y-%m-%d', time.localtime(time.time()))+'.log'
 				filename=os.path.join(logDir,filename)
-				handler = logging.FileHandler(filename,mode='a',encoding='gbk')
+				handler = logging.FileHandler(filename,mode='a',encoding='utf-8')
 				logger.addHandler(handler)
 				logger.setLevel(logging.INFO)
-				outStr = outbye.decode('gbk')
+				outStr = outbye.decode('utf-8')
 				# print(outStr)
 				data = outStr.replace('\r\n','')
 				message = time.strftime(
@@ -442,7 +482,7 @@ class Task(object):
 
 	def sigint_handler(self,signum, frame):
 		# print("sigint_handler",signum,frame)
-		print('请稍等，正在关闭子进程')
+		print('请稍等，正在关闭task-manage服务')
 		self.isStop=True
 		time.sleep(2)
 		self_pid = os.getpid()
@@ -451,10 +491,7 @@ class Task(object):
 			if os.path.exists(pidFilePath)==True:
 				os.remove(pidFilePath)
 			sysstr = platform.system()
-			if sysstr =="Windows":
-				os.kill(self_pid, signal.SIGTERM)
-			else:
-				os.kill(self_pid, signal.SIGKILL)
+			os.kill(self_pid, signal.SIGTERM)
 			
 		finally:
 			print('task-manage 服务关闭')

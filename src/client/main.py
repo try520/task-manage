@@ -67,11 +67,23 @@ def runserver():
 
 @click.command()
 def stopserver():
-    pidFilePath =os.path.join(taskDataPath,'pid')
-    with open(pidFilePath, 'r', encoding='utf-8') as f:
-	    pid=f.read()
-    os.kill(int(pid),signal.SIGTERM)
-    click.echo('服务终止')
+    click.echo('正在检测是否有运行中的服务，请稍等...')
+    ret = requests.get(url=apiUrl+'/server/stop')
+    data = ret.json()
+    if data['result']==1:
+        pidFilePath =os.path.join(taskDataPath,'pid')
+        with open(pidFilePath, 'r', encoding='utf-8') as f:
+	        pid=f.read()
+        sysstr = platform.system()
+        if sysstr =="Windows":
+            os.kill(int(pid),signal.SIGTERM)
+        else:
+            os.kill(int(pid),signal.SIGKILL)
+        click.echo('服务终止')
+    else:
+        click.echo(data['msg'])
+    
+    
 
 
 
@@ -119,9 +131,9 @@ def add(name,cron,path,file,command,args,info):
             else:
                 click.echo('添加{0}失败:{1}'.format(item['name'],retData['msg']))
     else:
-        if name == None or cron==None:
+        if name is None or cron is None:
             click.echo('参数丢失 [-n] [-c]  或者 [--name] [--cron]')
-        elif path==None and command==None:
+        elif path is None and command is None:
             click.echo('参数丢失 [-p] [-cmd]  或者 [--path] [--command]')
         else:
            
@@ -149,7 +161,7 @@ def add(name,cron,path,file,command,args,info):
 @click.option('--args',  '-a',  help='执行命令时携带的参数 需打双引号 ',required=False)
 @click.command()
 def edit(name,cron,path,command,args,info):
-    if name==None :
+    if name is None :
         click.echo('参数丢失 [-n] [-c]  或者 [--name] [--cron]')
     else:
         task={'name':name,'cron':cron,'path':path,'cmd':command,'args':args,'info':info}

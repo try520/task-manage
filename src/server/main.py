@@ -5,6 +5,7 @@ import json
 import sys
 import platform
 import configparser
+import signal
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(here,'../')) 
@@ -22,7 +23,17 @@ else:
 taskRootDir=conf.get('base','taskdir')
 webPort =conf.get('web','port')
 
-
+@route('/server/stop', method='GET')
+def stopServer():
+    try:
+        ret = task.killAllTask()
+        if ret=="":
+            
+            return json.dumps({"result": 1})
+        else:
+            return json.dumps({"result": 0,"msg":ret})
+    except Exception as err:
+        return json.dumps({"result": 0,"msg":err})
 
 @route('/task/getItems', method='GET')
 def getTaskItems():
@@ -77,7 +88,7 @@ def edit():
 def delete():
     try:
         name = request.forms.get('name')
-        if name == None:
+        if name is None:
             return json.dumps({"result": 0, "msg": '参数丢失'})
         else:
             ret = task.delete(name)
