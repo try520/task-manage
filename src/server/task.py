@@ -302,6 +302,7 @@ class Task(object):
 					os.kill(pid+1, signal.SIGTERM)
 				else:
 					os.kill(pid+1,signal.SIGKILL)
+					# os.system("ps -ef | grep {0} | grep -v grep | awk '{print $2}' |sudo xargs kill -9".format(name))
 				time.sleep(4)
 				# os.kill(pid, signal.SIGTERM)
 				# time.sleep(1)
@@ -448,11 +449,11 @@ class Task(object):
 				logger.info(message)
 				logger.removeHandler(handler)  # 添加下面一句，在记录日志之后移除句柄
 				
-				print(message)
-				for client in self.socketClients:
-					if client['tag'].index(taskItem['name']):
-						conn=client['conn']
-						conn.send(message.encode())
+				# print(message)
+				# for client in self.socketClients:
+				# 	if client['tag'].index(taskItem['name']):
+				# 		conn=client['conn']
+				# 		conn.send(message.encode())
 		
 		# print(taskItem)
 
