@@ -165,7 +165,7 @@ class Task(object):
 					json.dump(item, f, indent=4)
 		# print('job-execute',item)
 
-	def add(self,name,cron,path,commend,args):
+	def add(self,name,cron,path,commend,args,info):
 		taskDir = os.path.join(self.taskRootDir,name)
 		if name==None or cron==None or path==None :
 			return {"result":0,"msg":"参数丢失"}
@@ -174,7 +174,7 @@ class Task(object):
 			for item in self.taskItems:
 				if item['name']==name:
 					return {"result":0,"msg":"任务已经存在"}
-			item={'name':name,'cron':cron,'path':path,'state':'await run','nextRunTime':'','cmd':commend,'args':args}
+			item={'name':name,'cron':cron,'path':path,'state':'await run','nextRunTime':'','cmd':commend,'args':args,'info':info}
             
 			self.taskItems.append(item)
 
@@ -393,6 +393,9 @@ class Task(object):
 	def runTask(self,taskItem):
 		if taskItem["state"]=="runing" or taskItem["state"]=="stop":
 			return
+		if taskItem["state"]=="error":
+			self.kill(taskItem['name'])
+			
 		self.removeLog(taskItem)
 		taskDir =os.path.join(self.taskRootDir,taskItem['name']) 
 		logDir=os.path.join(taskDir,'log')
