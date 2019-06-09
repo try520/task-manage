@@ -53,6 +53,9 @@ def getTaskItem(name):
         return json.dumps({"result": 0, "msg": "Error:{0}".format(err)})
 
 
+
+
+
 @route('/task/add', method='POST')
 def add():
     try:
@@ -164,9 +167,10 @@ def resume():
 
 
 pidFilePath =os.path.join(taskRootDir,'pid')
+# pidFilePath = os.path.join(here,'../pid')
 with open(pidFilePath, 'w', encoding='utf-8') as f:
 	f.write(str(os.getpid()))
-run(host='0.0.0.0', port=int(webPort), debug=True, reloader=False)
+run(host='0.0.0.0', port=int(webPort), debug=False, reloader=False)
 
 
 

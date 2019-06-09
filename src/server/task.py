@@ -58,7 +58,9 @@ class Task(object):
 		#signal.signal(signal.SIGCHLD, self.sigint_handler) #子进程退出或中断
 		signal.signal(signal.SIGTERM, self.sigint_handler) # 终止信号,软件终止信号;
 		# self.bindSocket()
-		_thread.start_new_thread(self.bindSocket,())
+		# _thread.start_new_thread(self.bindsocket,())
+
+  
 
 	def bindSocket(self):
 		try:

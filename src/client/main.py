@@ -34,10 +34,10 @@ def tm():
 @click.command()
 def startup():
     if sysstr =="Linux":
-        os.system("sudo chmod 777 "+conf.get('base','taskdir'))
-        os.system("sudo echo '/usr/bin/python3 /usr/local/lib/python3.5/dist-packages/task_manage-1.0-py3.5.egg/server/main.py' >> /etc/rc.local")
+        os.system("sudo chmod 777 -R /usr/bin/python3/usr/local/lib/python3.5/dist-packages/task_manage-1.0-py3.5.egg")
+        os.system("sudo echo '/usr/bin/python3/usr/local/lib/python3.5/dist-packages/task_manage-1.0-py3.5.egg/server/main.py' >> /etc/rc.local")
         click.echo('设置开机启动成功')
-        # sourceFile = os.path.join(here,  "../config/task-manage-svr.sh") 
+        # sourceFile = os.path.join(here,  "../config/taskmd.sh") 
         # targetFile ="/etc/init.d/task-manage-svr"
         # shutil.copyfile(sourceFile,targetFile)
         # open(targetFile, "wb").write(open(sourceFile, "rb").read())
@@ -57,9 +57,7 @@ def startdown():
 
 @click.command()
 def runserver():
-    
     if sysstr =="Linux":
-        
          os.system("nohup runtaskmanageserver >> {0}/output.log 2>&1 &".format(taskDataPath))
     else:
         os.system("runtaskmanageserver")
@@ -73,7 +71,7 @@ def stopserver():
     if data['result']==1:
         pidFilePath =os.path.join(taskDataPath,'pid')
         with open(pidFilePath, 'r', encoding='utf-8') as f:
-	        pid=f.read()
+            pid=f.read()
         sysstr = platform.system()
         if sysstr =="Windows":
             os.kill(int(pid),signal.SIGTERM)
