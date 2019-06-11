@@ -1,4 +1,3 @@
-
 from setuptools import setup,find_packages
 setup(
     name='task-manage',
@@ -7,14 +6,13 @@ setup(
     author_email = "34492114@qq.com",
     license='MIT',
     keywords='cron task cmd',
-    package_dir = {'':'src'},  # 告诉distutils包都在src下
+    package_dir = {'':'src'},
     packages=find_packages(
         where="src",
         exclude=[],
     ),
     # py_modules=['main'],
     package_data = {
-        # 任何包中含有.txt文件，都包含它
         '': ['*.cfg','*.sh']
     },
     install_requires=[
@@ -29,3 +27,4 @@ setup(
     zip_safe=False,
     python_requires='>=3'
 )
+# -*- coding:UTF-8 -*-
