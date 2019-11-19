@@ -22,7 +22,7 @@ if sysstr == "Windows":
 else:
     conf.read(os.path.join(here, '../config', 'config.cfg'))
 
-taskDataPath = conf.get('base', 'taskdir')
+taskDataPath = os.path.join(here,"../task")
 
 
 @click.group()
@@ -113,7 +113,7 @@ def ls():
 @click.option('--args', '-a', help='执行命令时携带的参数 需打双引号 ', required=False)
 @click.option('--info', '-i', help='任务描述信息', required=False)
 @click.option('--path', '-p', type=click.Path(exists=True, resolve_path=True), help='执行的文件路径', required=False)
-@click.option('--log', '-l', type=click.Path(exists=True, resolve_path=True), help='日志文件目录路径', required=False)
+@click.option('--log', '-l', type=click.Path(exists=False, resolve_path=True), help='日志文件目录路径', required=False)
 @click.command()
 def add(name, cron, path, file, command, args, info,log):
     if file is not None:
@@ -156,12 +156,13 @@ def add(name, cron, path, file, command, args, info,log):
 @click.option('--path', '-p', type=click.Path(exists=True, resolve_path=True), help='执行的文件路径', required=False)
 @click.option('--command', '-cmd', help='cmd命令,需打双引号', required=False)
 @click.option('--args', '-a', help='执行命令时携带的参数 需打双引号 ', required=False)
+@click.option('--log', '-l', type=click.Path(exists=False, resolve_path=True), help='日志文件目录路径', required=False)
 @click.command()
-def edit(name, cron, path, command, args, info):
+def edit(name, cron, path, command, args, info,log):
     if name is None:
         click.echo('参数丢失 [-n] [-c]  或者 [--name] [--cron]')
     else:
-        task = {'name': name, 'cron': cron, 'path': path, 'cmd': command, 'args': args, 'info': info}
+        task = {'name': name, 'cron': cron, 'path': path, 'cmd': command, 'args': args, 'info': info, 'logPath':log}
         ret = requests.post(url=apiUrl + '/task/edit', data=task)
         retData = ret.json()
         if retData['result'] == 1:
@@ -270,6 +271,8 @@ def gethere():
     click.echo(here)
 
 
+
+
 tm.add_command(ls)
 tm.add_command(start)
 tm.add_command(stop)
@@ -285,6 +288,7 @@ tm.add_command(stopserver)
 tm.add_command(startup)
 tm.add_command(startdown)
 tm.add_command(gethere)
+
 
 if __name__ == '__main__':
     tm()

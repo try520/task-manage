@@ -141,7 +141,7 @@ class Task(object):
                                                                    ev.scheduled_run_time.hour,
                                                                    ev.scheduled_run_time.minute,
                                                                    ev.scheduled_run_time.second)
-            taskDir = os.path.join(self.taskRootDir, name)
+            taskDir = os.path.join(taskRootDir, name)
             with open(taskDir + '/info.json', 'w', encoding='utf-8') as f:
                 json.dump(item, f, indent=4)
         # print('job-execute',item)
@@ -154,7 +154,7 @@ class Task(object):
                                                                ev.scheduled_run_time.day, ev.scheduled_run_time.hour,
                                                                ev.scheduled_run_time.minute,
                                                                ev.scheduled_run_time.second)
-        taskDir = os.path.join(self.taskRootDir, name)
+        taskDir = os.path.join(taskRootDir, name)
         with open(taskDir + '/info.json', 'w', encoding='utf-8') as f:
             json.dump(item, f, indent=4)
         # print('job-execute',item)
@@ -167,7 +167,7 @@ class Task(object):
                                                                ev.scheduled_run_time.day, ev.scheduled_run_time.hour,
                                                                ev.scheduled_run_time.minute,
                                                                ev.scheduled_run_time.second)
-        taskDir = os.path.join(self.taskRootDir, name)
+        taskDir = os.path.join(taskRootDir, name)
         with open(taskDir + '/info.json', 'w', encoding='utf-8') as f:
             json.dump(item, f, indent=4)
         # print('job-execute',item)
@@ -189,13 +189,16 @@ class Task(object):
             if os.path.exists(taskDir) == False:
                 os.makedirs(taskDir)
 
+            if os.path.exists(logPath) == False:
+                os.makedirs(logPath)
+
             with open(taskDir + '/info.json', 'w', encoding='utf-8') as f:
                 json.dump(item, f, indent=4)
             self.addJob(item)
             return {"result": 1}
 
-    def edit(self, name, cron, path, commend, args):
-        taskDir = taskRootDir + '/' + name
+    def edit(self, name, cron, path, commend, args ,info, logPath):
+        taskDir = os.path.join(taskRootDir,name)
         if name is None or cron is None:
             return {"result": 0, "msg": "参数丢失"}
         else:
@@ -213,6 +216,10 @@ class Task(object):
                         self.taskItems[i]['cmd'] = commend
                     if (args is not None and args != ''):
                         self.taskItems[i]['args'] = args
+                    if (info is not None and info != ''):
+                        self.taskItems[i]['info'] = info
+                    if (logPath is not None and logPath != ''):
+                        self.taskItems[i]['logPath'] = logPath
                     item = self.taskItems[i]
                     isHas = True
 
@@ -403,7 +410,6 @@ class Task(object):
         if taskItem["state"] == "error":
             self.kill(taskItem['name'])
 
-        self.removeLog(taskItem)
         taskDir = os.path.join(taskRootDir, taskItem['name'])
         logDir = taskItem["logPath"]
         cmd = ""
@@ -444,12 +450,18 @@ class Task(object):
             else:
 
                 # 获取运行日志
+                if logDir is None:
+                    break
+
                 filename = time.strftime('%Y-%m-%d', time.localtime(time.time())) + '.log'
                 filename = os.path.join(logDir, filename)
                 handler = logging.FileHandler(filename, mode='a', encoding='utf-8')
                 logger.addHandler(handler)
                 logger.setLevel(logging.INFO)
-                outStr = outbye.decode('utf-8')
+                try:
+                    outStr = outbye.decode('utf-8')
+                except Exception as err:
+                    outStr = outbye.decode('gbk')
                 # print(outStr)
                 data = outStr.replace('\r\n', '')
                 message = time.strftime(
@@ -459,14 +471,16 @@ class Task(object):
 
                 # print(message)
                 for client in self.socketClients:
-                	if client['tag'].index(taskItem['name']):
-                		conn=client['conn']
-                		conn.send(message.encode())
+                    if client['tag'].index(taskItem['name']):
+                        conn=client['conn']
+                        conn.send(message.encode())
 
         # print(taskItem)
 
     def removeLog(self, taskItem):
         logDir = taskItem["logPath"]
+        if logDir is None:
+            return
         backupCount = int(conf.get('base', 'logbackupcount'))
         now = datetime.now()
         dirList = os.listdir(logDir)  # 列出文件夹下所有的目录与文件
@@ -490,7 +504,7 @@ class Task(object):
         self_pid = os.getpid()
         try:
             pidFilePath = os.path.join(taskRootDir, 'pid')
-            if os.path.exists(pidFilePath) == True:
+            if os.path.exists(pidFilePath):
                 os.remove(pidFilePath)
             sysstr = platform.system()
             os.kill(self_pid, signal.SIGTERM)
