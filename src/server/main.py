@@ -18,9 +18,10 @@ conf = configparser.ConfigParser()
 if platform.system() =="Windows":
     conf.read(os.path.join(here,'../config','config.win.cfg'))
 else:
-	conf.read(os.path.join(here,'../config','config.cfg'))
+    conf.read(os.path.join(here,'../config','config.cfg'))
 
-taskRootDir=conf.get('base','taskdir')
+taskRootDir=os.path.join(here,"../task")
+
 webPort =conf.get('web','port')
 
 @route('/server/stop', method='GET')
@@ -61,8 +62,9 @@ def add():
         path = request.forms.get('path')
         cmd = request.forms.get('cmd')
         args = request.forms.get('args')
+        logPath=request.forms.get('logPath')
         info =request.forms.info
-        ret = task.add(name, cron, path, cmd, args,info)
+        ret = task.add(name, cron, path, cmd, args,info,logPath)
         return json.dumps(ret)
     except Exception as err:
         return json.dumps({"result": 0, "msg": "Error:{0}".format(err)})
@@ -154,7 +156,7 @@ def paused():
 def resume():
     try:
         name = request.forms.get('name')
-        if name == None:
+        if name is None:
             return json.dumps({"result": 0, "msg": '参数丢失'})
         else:
             task.resume(name)
@@ -165,8 +167,8 @@ def resume():
 
 pidFilePath =os.path.join(taskRootDir,'pid')
 with open(pidFilePath, 'w', encoding='utf-8') as f:
-	f.write(str(os.getpid()))
-run(host='0.0.0.0', port=int(webPort), debug=True, reloader=False)
+    f.write(str(os.getpid()))
+run(host='0.0.0.0', port=int(webPort), debug=False, reloader=False)
 
 
 
