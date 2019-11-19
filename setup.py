@@ -2,11 +2,12 @@
 from setuptools import setup,find_packages
 setup(
     name='task-manage',
-    version='1.0',
+    version='1.0.0',
     author = "tianling",  
     author_email = "34492114@qq.com",
-    license='MIT',
-    keywords='cron task cmd',
+    license='MIT Licence',
+    keywords=("cron" , "task", "cmd"),
+    url="http://",
     package_dir = {'':'src'},  # 告诉distutils包都在src下
     packages=find_packages(
         where="src",

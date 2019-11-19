@@ -202,23 +202,22 @@ class Task(object):
         if name is None or cron is None:
             return {"result": 0, "msg": "参数丢失"}
         else:
-            # taskItems=task.getItems()
             item = {}
             isHas = False
 
             for i in range(0, len(self.taskItems)):
                 if self.taskItems[i]['name'] == name:
-                    if (cron is not None and cron != ''):
+                    if cron is not None and cron != '':
                         self.taskItems[i]['cron'] = cron
-                    if (path is not None and path != ''):
+                    if path is not None and path != '':
                         self.taskItems[i]['path'] = path
-                    if (commend is not None and commend != ''):
+                    if commend is not None and commend != '':
                         self.taskItems[i]['cmd'] = commend
-                    if (args is not None and args != ''):
+                    if args is not None and args != '':
                         self.taskItems[i]['args'] = args
-                    if (info is not None and info != ''):
+                    if info is not None and info != '':
                         self.taskItems[i]['info'] = info
-                    if (logPath is not None and logPath != ''):
+                    if logPath is not None and logPath != '':
                         self.taskItems[i]['logPath'] = logPath
                     item = self.taskItems[i]
                     isHas = True
