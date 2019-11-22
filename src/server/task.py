@@ -505,7 +505,7 @@ class Task(object):
             pidFilePath = os.path.join(taskRootDir, 'pid')
             if os.path.exists(pidFilePath):
                 os.remove(pidFilePath)
-            sysstr = platform.system()
+            # sysstr = platform.system()
             os.kill(self_pid, signal.SIGTERM)
 
         finally:
