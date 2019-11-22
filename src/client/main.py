@@ -285,9 +285,9 @@ tm.add_command(resume)
 tm.add_command(run)
 tm.add_command(log)
 tm.add_command(runserver)
-tm.add_command(stopserver)
-tm.add_command(startup)
-tm.add_command(startdown)
+# tm.add_command(stopserver)
+# tm.add_command(startup)
+# tm.add_command(startdown)
 tm.add_command(gethere)
 
 
