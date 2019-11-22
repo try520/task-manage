@@ -32,18 +32,12 @@ def tm():
 
 @click.command()
 def startup():
-<<<<<<< HEAD
     if sysstr == "Linux":
-        os.system("sudo chmod 777 " + conf.get('base', 'taskdir'))
+        os.system("sudo chmod 777 " + taskDataPath)
         os.system(
             "sudo echo '/usr/bin/python3 /usr/local/lib/python3.5/dist-packages/task_manage-1.0-py3.5.egg/server/main.py' >> /etc/rc.local")
-=======
-    if sysstr =="Linux":
-        os.system("sudo chmod 777 -R /usr/bin/python3/usr/local/lib/python3.5/dist-packages/task_manage-1.0-py3.5.egg")
-        os.system("sudo echo '/usr/bin/python3/usr/local/lib/python3.5/dist-packages/task_manage-1.0-py3.5.egg/server/main.py' >> /etc/rc.local")
->>>>>>> b0abc94e2d9ef7e8e44af5e7726f0b8699cc7081
         click.echo('设置开机启动成功')
-        # sourceFile = os.path.join(here,  "../config/taskmd.sh") 
+        # sourceFile = os.path.join(here,  "../config/task-manage-svr.sh")
         # targetFile ="/etc/init.d/task-manage-svr"
         # shutil.copyfile(sourceFile,targetFile)
         # open(targetFile, "wb").write(open(sourceFile, "rb").read())
@@ -65,13 +59,9 @@ def startdown():
 
 @click.command()
 def runserver():
-<<<<<<< HEAD
     if sysstr == "Linux":
+        os.system("sudo chmod 777 " + taskDataPath)
         os.system("nohup runtaskmanageserver >> {0}/output.log 2>&1 &".format(os.path.join(here, '../logs')))
-=======
-    if sysstr =="Linux":
-         os.system("nohup runtaskmanageserver >> {0}/output.log 2>&1 &".format(taskDataPath))
->>>>>>> b0abc94e2d9ef7e8e44af5e7726f0b8699cc7081
     else:
         os.system("runtaskmanageserver")
     click.echo('服务启动')
@@ -85,11 +75,7 @@ def stopserver():
     if data['result'] == 1:
         pidFilePath = os.path.join(taskDataPath, 'pid')
         with open(pidFilePath, 'r', encoding='utf-8') as f:
-<<<<<<< HEAD
             pid = f.read()
-=======
-            pid=f.read()
->>>>>>> b0abc94e2d9ef7e8e44af5e7726f0b8699cc7081
         sysstr = platform.system()
         if sysstr == "Windows":
             os.kill(int(pid), signal.SIGTERM)
