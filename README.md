@@ -2,29 +2,29 @@
 一个轻量级的定时任务执行系统，支持python，nodejs,以及一切命令行任务
 
 ## 安装
-```python
+```
 pip install task-manage
 ```
 
 ##使用方法
 
 ### 服务启动
-```python
+```
 tm runserver
 ```
 
 ### 服务停止
-```python
+```
 tm stopserver
 ```
 
 ### 查看任务列表
-```python
+```
 tm ls
 ```
 
 ### 添加任务 具体参数查看 tm add --help
-```python
+```
 tm add
 ```
 Options:
@@ -39,12 +39,12 @@ Options:
   --help                Show this message and exit.
 
 每5秒执行一次 /opt/app/src/test.py
-```python
+```
 tm add -n test -c "0/5 * * * * * *" -p /opt/app/src/test.py
 ```
 或者
 
-```python
+```
 tm add -n test -c "0/5 * * * * * *" -cmd "python3 /opt/app/src/test.py"
 ```
 
@@ -64,7 +64,7 @@ tm add -n test -c "0/5 * * * * * *" -cmd "python3 /opt/app/src/test.py"
 ]
 ```
 
-```python
+```
 tm add -f tm.json
 ```
 
@@ -79,11 +79,42 @@ Options:
   -n, --name TEXT       任务名称  [required]
   --help                Show this message and exit.
 
-```python
+```
 tm edit -n test -c "0/10 * * * * * *"
 ```
 
 ### 停止任务
-```bash
+```
 tm stop -n test
 ```
+
+### 开始任务
+```
+tm start -n test
+```
+
+### 暂停任务
+```
+tm paused -n test
+```
+
+### 恢复暂停中的任务
+```
+tm resume -n test
+```
+
+### 立即执行任务
+```
+tm run -n test
+```
+
+### 删除任务
+```
+tm delete -n test
+```
+
+### 查看任务日志
+```
+tm log -n test
+```
+

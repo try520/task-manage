@@ -1,10 +1,15 @@
 
 from setuptools import setup,find_packages
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
     name='task-manage',
     version='1.0.0',
     metadata_version='2.1',
     description="A lightweight timed task execution system, supporting python, nodejs, and all command-line tasks",
+    long_description_content_type="text/markdown",
+    long_description=long_description,
     author = "tianling",  
     author_email = "34492114@qq.com",
     license='MIT Licence',
@@ -31,5 +36,6 @@ setup(
         ]
     },
     zip_safe=False,
-    python_requires='>=3'
+    python_requires='>=3.5'
+    
 )
