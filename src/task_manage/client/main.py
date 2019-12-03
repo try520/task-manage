@@ -66,7 +66,10 @@ def runserver():
     if os.path.exists(logsPath) == False:
         os.makedirs(logsPath)
     if sysstr == "Linux":
+        if os.path.exists(taskDataPath) == False:
+            os.makedirs(taskDataPath)
         os.system("sudo chmod 777 " + taskDataPath)
+
         os.system("nohup runtaskmanageserver >> {0}/output.log 2>&1 &".format(logsPath))
     else:
         os.system("runtaskmanageserver")
