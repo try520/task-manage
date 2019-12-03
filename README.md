@@ -1,4 +1,4 @@
-# task-manage
+﻿# task-manage
 一个轻量级的定时任务执行系统，支持python，nodejs,以及一切命令行任务
 
 ## 安装
@@ -10,12 +10,12 @@ pip install task-manage
 
 ### 服务启动
 ```
-tm runserver
+sudo tm runserver
 ```
 
 ### 服务停止
 ```
-tm stopserver
+sudo tm stopserver
 ```
 
 ### 查看任务列表

@@ -2,6 +2,7 @@
 # apscheduler https://www.jianshu.com/p/4f5305e220f0
 import _thread
 import os
+import sys
 import json
 import time
 import shutil
@@ -18,6 +19,7 @@ from apscheduler.events import EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED, 
     EVENT_JOB_MISSED
 
 here = os.path.abspath(os.path.dirname(__file__))  # 获取项目根目录
+sys.path.append(os.path.join(here,'../../'))
 conf = configparser.ConfigParser()
 taskRootDir = os.path.join(here, "../task")  # 任务目录
 if platform.system() == "Windows":

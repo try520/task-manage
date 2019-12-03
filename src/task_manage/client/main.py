@@ -14,6 +14,7 @@ from prettytable import PrettyTable
 from time import sleep
 
 here = os.path.abspath(os.path.dirname(__file__))  # 获取项目根目录
+sys.path.append(os.path.join(here,'../../'))
 conf = configparser.ConfigParser()
 apiUrl = 'http://127.0.0.1:19090'
 sysstr = platform.system()
@@ -59,9 +60,14 @@ def startdown():
 
 @click.command()
 def runserver():
+    if os.path.exists(taskDataPath) == False:
+        os.makedirs(taskDataPath)
+    logsPath = os.path.join(here, '../logs')
+    if os.path.exists(logsPath) == False:
+        os.makedirs(logsPath)
     if sysstr == "Linux":
         os.system("sudo chmod 777 " + taskDataPath)
-        os.system("nohup runtaskmanageserver >> {0}/output.log 2>&1 &".format(os.path.join(here, '../logs')))
+        os.system("nohup runtaskmanageserver >> {0}/output.log 2>&1 &".format(logsPath))
     else:
         os.system("runtaskmanageserver")
     click.echo('服务启动')
@@ -285,7 +291,7 @@ tm.add_command(resume)
 tm.add_command(run)
 tm.add_command(log)
 tm.add_command(runserver)
-# tm.add_command(stopserver)
+tm.add_command(stopserver)
 # tm.add_command(startup)
 # tm.add_command(startdown)
 tm.add_command(gethere)

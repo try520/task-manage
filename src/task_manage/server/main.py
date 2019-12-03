@@ -5,12 +5,11 @@ import json
 import sys
 import platform
 import configparser
-import signal
 
 here = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(os.path.join(here,'../')) 
-from server.bottle import request, route, run, template
-from server.task import Task
+sys.path.append(os.path.join(here,'../../'))
+from task_manage.server.bottle import request, route, run
+from task_manage.server.task import Task
 
 task = Task()
 task.load()
