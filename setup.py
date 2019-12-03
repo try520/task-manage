@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='task-manage',
-    version='1.0.0',
+    version='1.0.2',
     metadata_version='2.1',
     description="A lightweight timed task execution system, supporting python, nodejs, and all command-line tasks",
     long_description_content_type="text/markdown",
@@ -13,9 +13,9 @@ setup(
     author = "tianling",  
     author_email = "34492114@qq.com",
     license='MIT Licence',
-    keywords=("cron" , "task", "cmd"),
-    url="https://packaging.python.org/specifications/core-metadata",
-    home_page="https://packaging.python.org/specifications/core-metadata",
+    keywords=("cron", "task", "cmd"),
+    url="https://github.com/try520/task-manage",
+    home_page="https://github.com/try520/task-manage",
     package_dir = {'':'src'},  # 告诉distutils包都在src下
     packages=find_packages(
         where="src",
