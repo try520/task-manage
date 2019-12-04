@@ -36,8 +36,8 @@ Options:
   -c, --cron TEXT       cron表达式,需打双引号 [required]
   -n, --name TEXT       任务名称 [required]
   -f, --file PATH       json配置文件
-  -cn --commandName TEXT 任务名称
-  -ld --logBackupDay TEXT 日志保存的时间
+  -cn --commandname TEXT 任务名称
+  -ld --logbackupday TEXT 日志保存的时间
   --help                Show this message and exit.
 ```
 每5秒执行一次 /opt/app/src/test.py
@@ -84,8 +84,8 @@ Options:
   -i, --info TEXT       任务描述信息
   -c, --cron TEXT       cron表达式
   -n, --name TEXT       任务名称  [required]
-  -cn --commandName TEXT 任务名称
-  -ld --logBackupDay TEXT 日志保存的时间
+  -cn --commandname TEXT 任务名称
+  -ld --logbackupday TEXT 日志保存的时间
   --help                Show this message and exit.
 ```
 修改任务的执行时间

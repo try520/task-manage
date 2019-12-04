@@ -174,7 +174,7 @@ class Task(object):
             json.dump(item, f, indent=4)
         # print('job-execute',item)
 
-    def add(self, name, cron, path, commend, args, info, logPath,commandName,logBackupDay):
+    def add(self, name, cron, path, commend, args, info, logPath, commandName="", logBackupDay=""):
         taskDir = os.path.join(taskRootDir, name)
         if name is None or cron is None :
             return {"result": 0, "msg": "参数丢失"}

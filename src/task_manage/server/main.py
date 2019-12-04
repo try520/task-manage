@@ -5,6 +5,8 @@ import json
 import sys
 import platform
 import configparser
+import _thread
+import time
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(here,'../../'))
@@ -20,8 +22,14 @@ else:
     conf.read(os.path.join(here,'../config','config.cfg'))
 
 taskRootDir=os.path.join(here,"../task")
-
+pidFilePath =os.path.join(taskRootDir,'pid')
+pid = str(os.getpid())
 webPort =conf.get('web','port')
+
+
+
+
+
 
 @route('/server/stop', method='GET')
 def stopServer():
@@ -168,9 +176,13 @@ def resume():
         return json.dumps({"result": 0, "msg": "Error:{0}".format(err)})
 
 
-pidFilePath =os.path.join(taskRootDir,'pid')
-with open(pidFilePath, 'w', encoding='utf-8') as f:
-    f.write(str(os.getpid()))
+def setPid():
+    with open(pidFilePath, 'w', encoding='utf-8') as f:
+        print("pid:{0}".format(pid))
+        f.write(pid)
+
+_thread.start_new_thread(setPid, ())
+
 run(host='0.0.0.0', port=int(webPort), debug=False, reloader=False)
 
 
