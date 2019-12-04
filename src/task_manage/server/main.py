@@ -62,8 +62,10 @@ def add():
         cmd = request.forms.get('cmd')
         args = request.forms.get('args')
         logPath=request.forms.get('logPath')
+        commandName=request.forms.get('commandName')
+        logBackupDay=request.forms.get('logBackupDay')
         info =request.forms.info
-        ret = task.add(name, cron, path, cmd, args,info,logPath)
+        ret = task.add(name, cron, path, cmd, args,info,logPath,commandName,logBackupDay)
         return json.dumps(ret)
     except Exception as err:
         return json.dumps({"result": 0, "msg": "Error:{0}".format(err)})
@@ -79,7 +81,9 @@ def edit():
         args = request.forms.get('args')
         info =request.forms.get('info')
         logPath = request.forms.get('logPath')
-        ret = task.edit(name, cron, path, cmd, args,info,logPath)
+        commandName = request.forms.get('commandName')
+        logBackupDay = request.forms.get('logBackupDay')
+        ret = task.edit(name, cron, path, cmd, args,info,logPath,commandName,logBackupDay)
         return json.dumps(ret)
     except Exception as err:
         return json.dumps({"result": 0, "msg": "Error:{0}".format(err)})

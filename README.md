@@ -25,19 +25,21 @@ tm ls
 
 ### 添加任务 具体参数查看 tm add --help
 ```
-tm add
-```
+tm add --help
+
 Options:
-  -l, --log PATH        日志文件目录路径
+  -l, --log PATH        日志文件目录路径 如果为空 不保存日志
   -p, --path PATH       执行的文件路径
   -i, --info TEXT       任务描述信息
   -a, --args TEXT       执行命令时携带的参数 需打双引号
   -cmd, --command TEXT  cmd命令,需打双引号
-  -c, --cron TEXT       cron表达式,需打双引号
-  -n, --name TEXT       任务名称
+  -c, --cron TEXT       cron表达式,需打双引号 [required]
+  -n, --name TEXT       任务名称 [required]
   -f, --file PATH       json配置文件
+  -cn --commandName TEXT 任务名称
+  -ld --logBackupDay TEXT 日志保存的时间
   --help                Show this message and exit.
-
+```
 每5秒执行一次 /opt/app/src/test.py
 ```
 tm add -n test -c "0/5 * * * * * *" -p /opt/app/src/test.py
@@ -48,18 +50,20 @@ tm add -n test -c "0/5 * * * * * *" -p /opt/app/src/test.py
 tm add -n test -c "0/5 * * * * * *" -cmd "python3 /opt/app/src/test.py"
 ```
 
-通过配置文件执行
+通过配置文件执行，可同时添加多个执行任务
 如 tm.json
 ```json
 [
     {
-        name:'test',
-        cron:"0/5 * * * * * *",
-        path:"/opt/app/src/test.py",
-        cmd:"",
-        args:"",
-        logpath:"/opt/app/logs",
-        info:"this is a demo"
+        "name":"test",
+        "cron":"0/5 * * * * * *",
+        "commandName": "python3",
+        "path":"/opt/app/src/test.py",
+        "cmd":"",
+        "args":"",
+        "logPath":"/opt/app/logs",
+        "logBackupDay": 7,
+        "info":"this is a demo"
     }
 ]
 ```
@@ -69,16 +73,22 @@ tm add -f tm.json
 ```
 
 ### 编辑任务 具体参数查看 tm edit --help
+```
+tm edit --help
+
 Options:
-  -l, --log PATH        日志文件目录路径
+  -l, --log PATH        日志文件目录路径 如果为空 不保存日志
   -a, --args TEXT       执行命令时携带的参数 需打双引号
   -cmd, --command TEXT  cmd命令,需打双引号
   -p, --path PATH       执行的文件路径
   -i, --info TEXT       任务描述信息
   -c, --cron TEXT       cron表达式
   -n, --name TEXT       任务名称  [required]
+  -cn --commandName TEXT 任务名称
+  -ld --logBackupDay TEXT 日志保存的时间
   --help                Show this message and exit.
-
+```
+修改任务的执行时间
 ```
 tm edit -n test -c "0/10 * * * * * *"
 ```

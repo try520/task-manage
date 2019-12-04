@@ -5,7 +5,7 @@ with open("README.md", "r",encoding='utf8') as fh:
 
 setup(
     name='task-manage',
-    version='1.0.5.3',
+    version='1.0.5.4',
     metadata_version='2.1',
     description="A lightweight timed task execution system, supporting python, nodejs, and all command-line tasks",
     long_description_content_type="text/markdown",

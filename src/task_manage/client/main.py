@@ -118,14 +118,16 @@ def ls():
 
 @click.option('--file', '-f', type=click.Path(exists=True, resolve_path=True), help='json配置文件', required=False)
 @click.option('--name', '-n', help='任务名称', required=False)
+@click.option('--commandName', '-cn', help='命令名称', required=False)
 @click.option('--cron', '-c', help='cron表达式,需打双引号', required=False)
 @click.option('--command', '-cmd', help='cmd命令,需打双引号', required=False)
 @click.option('--args', '-a', help='执行命令时携带的参数 需打双引号 ', required=False)
 @click.option('--info', '-i', help='任务描述信息', required=False)
 @click.option('--path', '-p', type=click.Path(exists=True, resolve_path=True), help='执行的文件路径', required=False)
 @click.option('--log', '-l', type=click.Path(exists=False, resolve_path=True), help='日志文件目录路径', required=False)
+@click.option('--logBackupDay', '-ld', help='日志保存时间', required=False)
 @click.command()
-def add(name, cron, path, file, command, args, info,log):
+def add(name, cron, path, file, command, args, info, log, commandName , logBackupDay):
     if file is not None:
         # with open(pidFilePath, 'r', encoding='utf-8') as f:
         with open(file, 'r', encoding='utf-8') as f:
@@ -150,7 +152,7 @@ def add(name, cron, path, file, command, args, info,log):
                 args = ""
             if info is None:
                 info = ""
-            task = {'name': name, 'cron': cron, 'path': path, 'cmd': command, 'args': args, 'info': info,'logPath':log}
+            task = {'name': name, 'cron': cron, 'path': path, 'cmd': command, 'args': args, 'info': info,'logPath':log,'commandName':commandName,'logBackupDay':logBackupDay}
             ret = requests.post(url=apiUrl + '/task/add', data=task)
             retData = ret.json()
 
@@ -161,18 +163,20 @@ def add(name, cron, path, file, command, args, info,log):
 
 
 @click.option('--name', '-n', help='任务名称', required=True)
+@click.option('--commandName', '-cn', help='命令名称', required=False)
 @click.option('--cron', '-c', help='cron表达式', required=False)
 @click.option('--info', '-i', help='任务描述信息', required=False)
 @click.option('--path', '-p', type=click.Path(exists=True, resolve_path=True), help='执行的文件路径', required=False)
 @click.option('--command', '-cmd', help='cmd命令,需打双引号', required=False)
 @click.option('--args', '-a', help='执行命令时携带的参数 需打双引号 ', required=False)
 @click.option('--log', '-l', type=click.Path(exists=False, resolve_path=True), help='日志文件目录路径', required=False)
+@click.option('--logBackupDay', '-ld', help='日志保存时间', required=False)
 @click.command()
-def edit(name, cron, path, command, args, info,log):
+def edit(name, cron, path, command, args, info,log, commandName , logBackupDay):
     if name is None:
-        click.echo('参数丢失 [-n] [-c]  或者 [--name] [--cron]')
+        click.echo('参数丢失 [-n]   或者 [--name]')
     else:
-        task = {'name': name, 'cron': cron, 'path': path, 'cmd': command, 'args': args, 'info': info, 'logPath':log}
+        task = {'name': name, 'cron': cron, 'path': path, 'cmd': command, 'args': args, 'info': info, 'logPath':log,'commandName':commandName,'logBackupDay':logBackupDay}
         ret = requests.post(url=apiUrl + '/task/edit', data=task)
         retData = ret.json()
         if retData['result'] == 1:

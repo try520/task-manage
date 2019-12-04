@@ -174,7 +174,7 @@ class Task(object):
             json.dump(item, f, indent=4)
         # print('job-execute',item)
 
-    def add(self, name, cron, path, commend, args, info, logPath):
+    def add(self, name, cron, path, commend, args, info, logPath,commandName,logBackupDay):
         taskDir = os.path.join(taskRootDir, name)
         if name is None or cron is None :
             return {"result": 0, "msg": "参数丢失"}
@@ -184,14 +184,14 @@ class Task(object):
                 if item['name'] == name:
                     return {"result": 0, "msg": "任务已经存在"}
             item = {'name': name, 'cron': cron, 'path': path, 'state': 'await run', 'nextRunTime': '', 'cmd': commend,
-                    'args': args, 'info': info, 'logPath': logPath}
+                    'args': args, 'info': info, 'logPath': logPath,'commandName':commandName,'logBackupDay':logBackupDay}
 
             self.taskItems.append(item)
 
             if os.path.exists(taskDir) == False:
                 os.makedirs(taskDir)
 
-            if os.path.exists(logPath) == False:
+            if logPath is not None and logPath!='' and  os.path.exists(logPath) == False:
                 os.makedirs(logPath)
 
             with open(taskDir + '/info.json', 'w', encoding='utf-8') as f:
@@ -199,7 +199,7 @@ class Task(object):
             self.addJob(item)
             return {"result": 1}
 
-    def edit(self, name, cron, path, commend, args ,info, logPath):
+    def edit(self, name, cron, path, commend, args ,info, logPath,commandName,logBackupDay):
         taskDir = os.path.join(taskRootDir,name)
         if name is None or cron is None:
             return {"result": 0, "msg": "参数丢失"}
@@ -221,6 +221,10 @@ class Task(object):
                         self.taskItems[i]['info'] = info
                     if logPath is not None and logPath != '':
                         self.taskItems[i]['logPath'] = logPath
+                    if commandName is not None and commandName != '':
+                        self.taskItems[i]['commandName'] = commandName
+                    if logBackupDay is not None and logBackupDay != '':
+                        self.taskItems[i]['logBackupDay'] = logBackupDay
                     item = self.taskItems[i]
                     isHas = True
 
@@ -414,14 +418,18 @@ class Task(object):
         taskDir = os.path.join(taskRootDir, taskItem['name'])
         logDir = taskItem["logPath"]
         cmd = ""
+        commandName = taskItem["commandName"]
+
         if taskItem['path'] is not None and taskItem['path'] != '':
             _path = taskItem['path'].split('.')
             ext = _path[len(_path) - 1]
-            if ext.lower() == 'py':
-                cmd = '{0} {1} {2}'.format(conf.get('base', 'pycmd'), taskItem['path'], taskItem['args'])
-            elif ext.lower() == 'js':
-                cmd = 'node {0} {1}'.format(taskItem['path'], taskItem['args'])
-                pass
+            if commandName is None:
+                if ext.lower() == 'py':
+                    commandName = conf.get('base', 'pycmd')
+                elif ext.lower() == 'js':
+                    commandName = "node"
+
+            cmd = '{0} {1} {2}'.format(commandName, taskItem['path'], taskItem['args'])
 
         if taskItem['cmd'] is not None and taskItem['cmd'] != '':
             cmd = taskItem['cmd']
@@ -451,38 +459,40 @@ class Task(object):
             else:
 
                 # 获取运行日志
-                if logDir is None:
-                    break
+                if logDir is not None and logDir != "":
+                    filename = time.strftime('%Y-%m-%d', time.localtime(time.time())) + '.log'
+                    filename = os.path.join(logDir, filename)
+                    handler = logging.FileHandler(filename, mode='a', encoding='utf-8')
+                    logger.addHandler(handler)
+                    logger.setLevel(logging.INFO)
+                    try:
+                        outStr = outbye.decode('utf-8')
+                    except Exception as err:
+                        outStr = outbye.decode('gbk')
+                    # print(outStr)
+                    data = outStr.replace('\r\n', '')
+                    message = time.strftime(
+                        '%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + ":" + data
+                    logger.info(message)
+                    logger.removeHandler(handler)  # 在记录日志之后移除句柄
 
-                filename = time.strftime('%Y-%m-%d', time.localtime(time.time())) + '.log'
-                filename = os.path.join(logDir, filename)
-                handler = logging.FileHandler(filename, mode='a', encoding='utf-8')
-                logger.addHandler(handler)
-                logger.setLevel(logging.INFO)
-                try:
-                    outStr = outbye.decode('utf-8')
-                except Exception as err:
-                    outStr = outbye.decode('gbk')
-                # print(outStr)
-                data = outStr.replace('\r\n', '')
-                message = time.strftime(
-                    '%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + ":" + data
-                logger.info(message)
-                logger.removeHandler(handler)  # 在记录日志之后移除句柄
+                    # print(message)
+                    for client in self.socketClients:
+                        if client['tag'].index(taskItem['name']):
+                            conn = client['conn']
+                            conn.send(message.encode())
 
-                # print(message)
-                for client in self.socketClients:
-                    if client['tag'].index(taskItem['name']):
-                        conn=client['conn']
-                        conn.send(message.encode())
 
-        # print(taskItem)
 
     def removeLog(self, taskItem):
         logDir = taskItem["logPath"]
-        if logDir is None:
+        logBackupDay = taskItem["logBackupDay"]
+
+        if logDir is None or logDir == "":
             return
-        backupCount = int(conf.get('base', 'logbackupcount'))
+        if logBackupDay is None:
+            logBackupDay = 7
+
         now = datetime.now()
         dirList = os.listdir(logDir)  # 列出文件夹下所有的目录与文件
         deleteFileName = []
@@ -490,7 +500,7 @@ class Task(object):
             timeStr = n.replace('.log', '')
             time = datetime.strptime(timeStr, "%Y-%m-%d")
             span = (now - time).days
-            if span > backupCount:
+            if span > logBackupDay:
                 deleteFileName.append(n)
 
         for fileName in deleteFileName:
@@ -507,8 +517,9 @@ class Task(object):
             pidFilePath = os.path.join(taskRootDir, 'pid')
             if os.path.exists(pidFilePath):
                 os.remove(pidFilePath)
-            # sysstr = platform.system()
-            os.kill(self_pid, signal.SIGTERM)
-
+            if platform.system() == "Windows":
+                os.kill(self_pid, signal.SIGTERM)
+            else:
+                os.kill(self_pid, signal.SIGKILL)
         finally:
             print('task-manage 服务关闭')
